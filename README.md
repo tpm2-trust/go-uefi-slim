@@ -65,6 +65,22 @@ the bit since Linux 6.0). `go test -fuzz` for the parsers (signature lists,
 signed updates, PE images). Checked once against sbsigntool and efitools
 (2026-10-30, Debian trixie): see the commit log.
 
+## On a machine's firmware
+
+`internal/vmcheck` tries the module on firmware in Setup Mode (a test VM:
+enrolling PK ends Setup Mode for good). `vmcheck enrol /var/lib/sbctl
+FILE...` makes PK, KEK and db as sbctl lays them out (RSA-4096), signs the
+files, enrols db, KEK and PK with Microsoft's certificates; `vmcheck state`,
+`vmcheck verify`. Done on tpm2-kira's local VMs (OVMF with Secure Boot,
+2026-10-30):
+
+- Arch (systemd-boot, a UKI, both signed here): boots with Secure Boot on;
+  `sbctl status` reads the keys as its own (owner GUID, vendor keys
+  microsoft), `sbctl verify` the files as signed; a UKI changed by one byte
+  is refused by the firmware ("Access denied").
+- Debian (shim, GRUB): boots with Secure Boot on through Microsoft's
+  certificates as enrolled here.
+
 ## Licence
 
 BSD 3-Clause.
