@@ -1,9 +1,10 @@
 # uefi
 
 UEFI for Go programs on Linux, with the standard library and `golang.org/x/sys`
-alone: EFI variables through efivarfs, and (to come) Secure Boot's signature
-databases, signed variable updates and Authenticode. What it writes is what
-sbctl writes, so either can take over a machine the other set up.
+alone: EFI variables through efivarfs, Secure Boot's signature databases,
+signed variable updates and Authenticode. What it writes is what sbctl,
+sbsigntools and efitools write, so either can take over a machine the other
+set up.
 
 Used by aSSH (`persist`: its CA in an EFI variable) and tpm2-kira (its own
 variables, Secure Boot). Part of the tpm2-trust workspace; owned by neither
@@ -29,11 +30,40 @@ on, err := s.ReadBool("SetupMode", efivar.GlobalVariable)
   afterwards, also when it failed. Looking at a variable never creates it.
 - **`Store{Dir: ...}`** stands a directory in for efivarfs: tests, a chroot.
 
+## sigdb, authvar, authenticode, mscerts: Secure Boot
+
+```go
+db := sigdb.Database{sigdb.X509(owner, cert)}           // EFI_SIGNATURE_LISTs
+data, _ := db.Bytes()
+upd, _ := authvar.Sign(authvar.DB, authvar.Attributes, data, kekKey, kekCert, time.Now())
+err = efivar.Store{}.Write("db", efivar.ImageSecurityDatabase, authvar.Attributes, upd)
+signed, _ := authenticode.Sign(img, dbKey, dbCert)       // a boot loader, a UKI
+err = authenticode.Verify(signed, dbCert)
+kek, _ := mscerts.KEK()                                  // Microsoft's, as sbctl --microsoft
+```
+
+- **sigdb**: EFI_SIGNATURE_LIST read and built (X.509, SHA-256 entries); the
+  lists are byte for byte what efitools' `cert-to-efi-sig-list` makes.
+- **authvar**: EFI_VARIABLE_AUTHENTICATION_2 - a PKCS#7 SignedData (no
+  ContentInfo, detached, with signed attributes, as sbctl) over the variable's
+  name, GUID, attributes, timestamp and data. Verifies updates with or without
+  signed attributes (efitools' `sign-efi-sig-list` has none).
+- **authenticode**: the image hash as the firmware computes it (edk2), the
+  signature appended as an 8-byte aligned WIN_CERTIFICATE, the checksum set;
+  `sbverify` accepts what it signs, and it verifies what `sbsign` signs.
+- **mscerts**: Microsoft's KEK and db certificates (2011, 2023), downloaded
+  from Microsoft, identical to sbctl's copy, pinned by SHA-256 in the test.
+
+Keys sign through `crypto.Signer`: a key file, a YubiKey, the TPM. UEFI
+signatures are RSA.
+
 ## Tests
 
 `go test -count=1 ./...`. The immutable test needs `CAP_LINUX_IMMUTABLE` and
 is skipped without it; run the test binary as root on a machine (tmpfs has
-the bit since Linux 6.0). `go test -fuzz` for the parsers.
+the bit since Linux 6.0). `go test -fuzz` for the parsers (signature lists,
+signed updates, PE images). Checked once against sbsigntool and efitools
+(2026-10-30, Debian trixie): see the commit log.
 
 ## Licence
 
