@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tpm2-trust/uefi/internal/testkeys"
+	"github.com/tpm2-trust/go-uefi-slim/internal/testkeys"
 )
 
 // minimalPE is a PE32+ with one section of data and trail after it.

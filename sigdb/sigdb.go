@@ -18,7 +18,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/tpm2-trust/uefi/efivar"
+	"github.com/tpm2-trust/go-uefi-slim/efivar"
 )
 
 // MicrosoftOwner is the owner GUID Microsoft's certificates are enrolled

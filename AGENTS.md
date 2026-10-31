@@ -1,9 +1,12 @@
-# Notes for agents working on uefi
+# Notes for agents working on go-uefi-slim
 
 - **The standard library and `golang.org/x/sys` alone.** No other dependency:
   aSSH and tpm2-kira link this, and safearch's initrd links aSSH. PKCS#7,
   signature lists, Authenticode are built with `encoding/asn1`, `crypto/x509`,
   `debug/pe`.
+- **Not go-uefi's code.** Nothing is copied from foxboron/go-uefi (MIT); this
+  module is BSD-3 and written from the specifications, edk2 and sbctl's
+  output.
 - **sbctl can take over.** Whatever this writes (variables, signature lists,
   signed updates, signatures in a PE) is what sbctl writes and reads; tests
   check against sbctl's and sbsigntools' output where there is one.

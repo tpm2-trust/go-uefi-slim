@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tpm2-trust/uefi/efivar"
+	"github.com/tpm2-trust/go-uefi-slim/efivar"
 )
 
 // Signature types of the UEFI specification (2.10, 32.4.1; edk2's

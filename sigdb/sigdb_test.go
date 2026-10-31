@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"testing"
 
-	"github.com/tpm2-trust/uefi/efivar"
-	"github.com/tpm2-trust/uefi/internal/testkeys"
+	"github.com/tpm2-trust/go-uefi-slim/efivar"
+	"github.com/tpm2-trust/go-uefi-slim/internal/testkeys"
 )
 
 var owner = efivar.MustParseGUID("2b0f2e5c-6a51-4d63-9f3a-9b1f6c1c7a10")

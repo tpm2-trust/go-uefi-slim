@@ -24,7 +24,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/tpm2-trust/uefi/internal/pkcs7"
+	"github.com/tpm2-trust/go-uefi-slim/internal/pkcs7"
 )
 
 var (

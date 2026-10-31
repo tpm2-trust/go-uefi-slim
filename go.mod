@@ -1,4 +1,4 @@
-module github.com/tpm2-trust/uefi
+module github.com/tpm2-trust/go-uefi-slim
 
 go 1.26.0
 

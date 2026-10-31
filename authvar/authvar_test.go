@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tpm2-trust/uefi/efivar"
-	"github.com/tpm2-trust/uefi/internal/testkeys"
-	"github.com/tpm2-trust/uefi/sigdb"
+	"github.com/tpm2-trust/go-uefi-slim/efivar"
+	"github.com/tpm2-trust/go-uefi-slim/internal/testkeys"
+	"github.com/tpm2-trust/go-uefi-slim/sigdb"
 )
 
 // An update of db signed by a KEK key: parsed, verified with that key's

@@ -24,11 +24,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/tpm2-trust/uefi/authenticode"
-	"github.com/tpm2-trust/uefi/authvar"
-	"github.com/tpm2-trust/uefi/efivar"
-	"github.com/tpm2-trust/uefi/mscerts"
-	"github.com/tpm2-trust/uefi/sigdb"
+	"github.com/tpm2-trust/go-uefi-slim/authenticode"
+	"github.com/tpm2-trust/go-uefi-slim/authvar"
+	"github.com/tpm2-trust/go-uefi-slim/efivar"
+	"github.com/tpm2-trust/go-uefi-slim/mscerts"
+	"github.com/tpm2-trust/go-uefi-slim/sigdb"
 )
 
 func main() {

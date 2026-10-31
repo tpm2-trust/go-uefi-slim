@@ -1,4 +1,4 @@
-# uefi
+# go-uefi-slim
 
 UEFI for Go programs on Linux, with the standard library and `golang.org/x/sys`
 alone: EFI variables through efivarfs, Secure Boot's signature databases,
@@ -9,6 +9,10 @@ set up.
 Used by aSSH (`persist`: its CA in an EFI variable) and tpm2-kira (its own
 variables, Secure Boot). Part of the tpm2-trust workspace; owned by neither
 project.
+
+Written on its own, not derived from
+[foxboron/go-uefi](https://github.com/Foxboron/go-uefi), which covers more
+(boot entries, timestamps) with more dependencies; "slim" is the difference.
 
 ## efivar
 

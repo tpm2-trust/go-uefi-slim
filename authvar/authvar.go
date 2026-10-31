@@ -22,8 +22,8 @@ import (
 	"time"
 	"unicode/utf16"
 
-	"github.com/tpm2-trust/uefi/efivar"
-	"github.com/tpm2-trust/uefi/internal/pkcs7"
+	"github.com/tpm2-trust/go-uefi-slim/efivar"
+	"github.com/tpm2-trust/go-uefi-slim/internal/pkcs7"
 )
 
 // Attributes are those of an authenticated Secure Boot variable; with

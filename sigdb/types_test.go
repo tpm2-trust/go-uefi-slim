@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tpm2-trust/uefi/efivar"
-	"github.com/tpm2-trust/uefi/internal/testkeys"
+	"github.com/tpm2-trust/go-uefi-slim/efivar"
+	"github.com/tpm2-trust/go-uefi-slim/internal/testkeys"
 )
 
 // The GUIDs as edk2's ImageAuthentication.h initialises them, so that the
