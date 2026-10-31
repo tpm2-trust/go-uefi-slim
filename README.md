@@ -42,8 +42,14 @@ err = authenticode.Verify(signed, dbCert)
 kek, _ := mscerts.KEK()                                  // Microsoft's, as sbctl --microsoft
 ```
 
-- **sigdb**: EFI_SIGNATURE_LIST read and built (X.509, SHA-256 entries); the
-  lists are byte for byte what efitools' `cert-to-efi-sig-list` makes.
+- **sigdb**: EFI_SIGNATURE_LIST read and built, every type of the UEFI
+  specification (X.509; SHA-1/224/256/384/512 and SM3 digests; RSA-2048 keys
+  and signatures; X.509 To-Be-Signed digests with their revocation time;
+  external management), each held to its size and to no header; a type the
+  specification does not define is kept as it is. The lists are byte for
+  byte what efitools' `cert-to-efi-sig-list` makes; Microsoft's published dbx
+  updates read and write back unchanged. SM3 digests are given, not computed
+  (Go's standard library has no SM3).
 - **authvar**: EFI_VARIABLE_AUTHENTICATION_2 - a PKCS#7 SignedData (no
   ContentInfo, detached, with signed attributes, as sbctl) over the variable's
   name, GUID, attributes, timestamp and data. Verifies updates with or without

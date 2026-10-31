@@ -36,7 +36,6 @@ var CertTypePKCS7 = efivar.MustParseGUID("4aafd29d-68df-49ee-8aa9-347d375665a7")
 const (
 	winCertRevision = 0x0200
 	winCertTypeGUID = 0x0EF1
-	timeSize        = 16
 	winCertHdrSize  = 4 + 2 + 2 + 16
 )
 
@@ -54,18 +53,8 @@ var (
 	DBX = Variable{"dbx", efivar.ImageSecurityDatabase}
 )
 
-// Time is EFI_TIME as the update carries it: UTC, no nanoseconds, time
-// zone or daylight (the firmware refuses them in a timestamp).
-func Time(t time.Time) [timeSize]byte {
-	t = t.UTC()
-	var b [timeSize]byte
-	binary.LittleEndian.PutUint16(b[0:], uint16(t.Year()))
-	b[2], b[3], b[4], b[5], b[6] = byte(t.Month()), byte(t.Day()), byte(t.Hour()), byte(t.Minute()), byte(t.Second())
-	return b
-}
-
 // signedBytes is what the signature covers.
-func signedBytes(v Variable, attrs efivar.Attributes, ts [timeSize]byte, data []byte) []byte {
+func signedBytes(v Variable, attrs efivar.Attributes, ts [efivar.TimeSize]byte, data []byte) []byte {
 	var b []byte
 	for _, u := range utf16.Encode([]rune(v.Name)) {
 		b = binary.LittleEndian.AppendUint16(b, u)
@@ -82,7 +71,7 @@ func signedBytes(v Variable, attrs efivar.Attributes, ts [timeSize]byte, data []
 // An update replaces the variable only with a timestamp later than the
 // one it has.
 func Sign(v Variable, attrs efivar.Attributes, data []byte, key crypto.Signer, cert *x509.Certificate, at time.Time) ([]byte, error) {
-	ts := Time(at)
+	ts := efivar.Time(at)
 	sd, err := pkcs7.Sign(key, cert, pkcs7.Options{
 		ContentType: pkcs7.OIDData,
 		Digested:    signedBytes(v, attrs, ts, data),
@@ -102,19 +91,19 @@ func Sign(v Variable, attrs efivar.Attributes, data []byte, key crypto.Signer, c
 
 // Update is a parsed signed update.
 type Update struct {
-	Time      [timeSize]byte
+	Time      [efivar.TimeSize]byte
 	Signature []byte // the PKCS#7 SignedData
 	Data      []byte
 }
 
 // Parse splits a signed update into its timestamp, signature and data.
 func Parse(b []byte) (*Update, error) {
-	if len(b) < timeSize+winCertHdrSize {
+	if len(b) < efivar.TimeSize+winCertHdrSize {
 		return nil, errors.New("shorter than EFI_VARIABLE_AUTHENTICATION_2")
 	}
 	var u Update
 	copy(u.Time[:], b)
-	w := b[timeSize:]
+	w := b[efivar.TimeSize:]
 	length := binary.LittleEndian.Uint32(w)
 	if binary.LittleEndian.Uint16(w[4:]) != winCertRevision || binary.LittleEndian.Uint16(w[6:]) != winCertTypeGUID {
 		return nil, errors.New("not a WIN_CERTIFICATE_UEFI_GUID")

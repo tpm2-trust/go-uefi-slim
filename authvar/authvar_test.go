@@ -27,7 +27,7 @@ func TestSignVerify(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(u.Data) != string(data) || u.Time != Time(at) {
+	if string(u.Data) != string(data) || u.Time != efivar.Time(at) {
 		t.Fatal("data or time")
 	}
 	if err := u.Verify(DB, Attributes, kek); err != nil {
@@ -45,15 +45,6 @@ func TestSignVerify(t *testing.T) {
 	u.Data = append(u.Data[:len(u.Data)-1], u.Data[len(u.Data)-1]^1)
 	if err := u.Verify(DB, Attributes, kek); err == nil {
 		t.Fatal("verified with other data")
-	}
-}
-
-// EFI_TIME: year little endian, then month to second; nothing else.
-func TestTime(t *testing.T) {
-	got := Time(time.Date(2026, 10, 30, 12, 34, 56, 789, time.FixedZone("x", 3600)))
-	want := [16]byte{0xea, 0x07, 10, 30, 11, 34, 56}
-	if got != want {
-		t.Fatalf("%x", got)
 	}
 }
 

@@ -6,25 +6,19 @@
 //	SignatureHeaderSize, SignatureSize (uint32 each, little endian), the
 //	header, then the entries: SignatureOwner (GUID) and the signature's
 //	data, SignatureSize bytes together.
+//
+// Every type of the UEFI specification is read and built, each held to
+// its size (types.go); a list of another type is kept as it is.
 package sigdb
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/binary"
 	"errors"
 	"fmt"
 
 	"github.com/tpm2-trust/uefi/efivar"
-)
-
-// Signature types.
-var (
-	// CertX509 is an X.509 certificate, DER, one per list.
-	CertX509 = efivar.MustParseGUID("a5c059a1-94e4-4aa7-87b5-ab155c2bf072")
-	// CertSHA256 is the SHA-256 of an image or a certificate.
-	CertSHA256 = efivar.MustParseGUID("c1c41626-504c-4092-aca9-41f936934328")
 )
 
 // MicrosoftOwner is the owner GUID Microsoft's certificates are enrolled
@@ -80,6 +74,9 @@ func Parse(b []byte) (Database, error) {
 			l.Signatures = append(l.Signatures, s)
 			body = body[sigSize:]
 		}
+		if err := l.check(); err != nil {
+			return nil, err
+		}
 		db = append(db, l)
 		b = b[listSize:]
 	}
@@ -93,6 +90,9 @@ func (db Database) Bytes() ([]byte, error) {
 	for _, l := range db {
 		if len(l.Signatures) == 0 {
 			continue
+		}
+		if err := l.check(); err != nil {
+			return nil, err
 		}
 		sigSize := 16 + len(l.Signatures[0].Data)
 		size := listHeaderSize + len(l.Header) + sigSize*len(l.Signatures)
@@ -110,20 +110,6 @@ func (db Database) Bytes() ([]byte, error) {
 		}
 	}
 	return out, nil
-}
-
-// X509 is a list of one certificate, as sbctl and efitools enrol them.
-func X509(owner efivar.GUID, cert *x509.Certificate) List {
-	return List{Type: CertX509, Signatures: []Signature{{Owner: owner, Data: bytes.Clone(cert.Raw)}}}
-}
-
-// SHA256 is a list of image digests.
-func SHA256(owner efivar.GUID, digests ...[sha256.Size]byte) List {
-	l := List{Type: CertSHA256}
-	for _, d := range digests {
-		l.Signatures = append(l.Signatures, Signature{Owner: owner, Data: bytes.Clone(d[:])})
-	}
-	return l
 }
 
 // Entry is a certificate of a database with its owner.
