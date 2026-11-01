@@ -14,7 +14,7 @@ package authenticode
 import (
 	"bytes"
 	"crypto"
-	"crypto/sha256"
+	_ "crypto/sha256" // the signatures' hash
 	"crypto/x509"
 	"debug/pe"
 	"encoding/asn1"
@@ -98,8 +98,8 @@ func parse(img []byte) (*layout, error) {
 	return l, nil
 }
 
-func (l *layout) hash(img []byte) []byte {
-	h := sha256.New()
+func (l *layout) hash(img []byte, alg crypto.Hash) []byte {
+	h := alg.New()
 	h.Write(img[:l.checksum])
 	if l.certEntry >= 0 {
 		h.Write(img[l.checksum+4 : l.certEntry])
@@ -124,7 +124,21 @@ func Hash(img []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return l.hash(img), nil
+	return l.hash(img, crypto.SHA256), nil
+}
+
+// HashWith is the image's Authenticode hash with another hash function, as the
+// firmware measures it into a PCR bank of that hash (PCR 4). Signatures use
+// SHA-256; this is for predicting a measurement. The caller links in the hash.
+func HashWith(img []byte, alg crypto.Hash) ([]byte, error) {
+	if !alg.Available() {
+		return nil, fmt.Errorf("hash %v is not available", alg)
+	}
+	l, err := parse(img)
+	if err != nil {
+		return nil, err
+	}
+	return l.hash(img, alg), nil
 }
 
 // indirectData is SpcIndirectDataContent for a PE image with its digest.
@@ -204,7 +218,7 @@ func Sign(img []byte, key crypto.Signer, cert *x509.Certificate) ([]byte, error)
 	if err != nil {
 		return nil, err
 	}
-	content, err := indirectData(l.hash(out))
+	content, err := indirectData(l.hash(out, crypto.SHA256))
 	if err != nil {
 		return nil, err
 	}

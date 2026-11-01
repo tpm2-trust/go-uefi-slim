@@ -2,6 +2,8 @@ package authenticode
 
 import (
 	"bytes"
+	"crypto"
+	_ "crypto/sha1" // HashWith's bank
 	"encoding/binary"
 	"os"
 	"testing"
@@ -38,6 +40,28 @@ func minimalPE(data, trail []byte) []byte {
 	img = append(img, data...)
 	img = append(img, make([]byte, size-len(data))...)
 	return append(img, trail...)
+}
+
+// HashWith is Hash in another hash function, over the same bytes.
+func TestHashWith(t *testing.T) {
+	img := minimalPE([]byte("code"), []byte("trail"))
+	h256, _ := Hash(img)
+	if h, err := HashWith(img, crypto.SHA256); err != nil || !bytes.Equal(h, h256) {
+		t.Fatalf("SHA-256: %x %v", h, err)
+	}
+	h1, err := HashWith(img, crypto.SHA1)
+	if err != nil || len(h1) != 20 {
+		t.Fatalf("SHA-1: %x %v", h1, err)
+	}
+	const opt = 0x80 + 4 + 20
+	same := bytes.Clone(img)
+	binary.LittleEndian.PutUint32(same[opt+64:], 0x12345678)
+	if h, _ := HashWith(same, crypto.SHA1); !bytes.Equal(h, h1) {
+		t.Fatal("the checksum changed the SHA-1 hash")
+	}
+	if _, err := HashWith(img, crypto.Hash(0)); err == nil {
+		t.Fatal("no hash function")
+	}
 }
 
 // The hash leaves out the checksum and the certificate table's entry, and
