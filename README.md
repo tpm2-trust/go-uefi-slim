@@ -67,12 +67,27 @@ kek, _ := mscerts.KEK()                                  // Microsoft's, as sbct
 Keys sign through `crypto.Signer`: a key file, a YubiKey, the TPM. UEFI
 signatures are RSA.
 
+## uki: unified kernel images
+
+```go
+i, _ := uki.Open(path)
+v, _ := i.PCR11(crypto.SHA256, []string{"enter-initrd"})   // what the stub and the phases extend
+ms, _ := i.Measurements(crypto.SHA256)                     // each digest, by section
+sigs, _ := i.PCRSignatures()                               // .pcrsig, systemd-measure sign's JSON
+sig := sigs.Find("sha256", []int{11}, pol, verify)         // the caller's check of the signature
+file := uki.ImageLoadPath(event.Data)                      // PCR 4: which file an image load event names
+```
+
+The sections without their padding; PCR 11 equal to `systemd-measure calculate`
+in the test. Nothing here knows a TPM: a policy digest over a value, or a
+signature's check by a key, is the caller's.
+
 ## Tests
 
 `go test -count=1 ./...`. The immutable test needs `CAP_LINUX_IMMUTABLE` and
 is skipped without it; run the test binary as root on a machine (tmpfs has
 the bit since Linux 6.0). `go test -fuzz` for the parsers (signature lists,
-signed updates, PE images). Checked once against sbsigntool and efitools
+signed updates, PE images, systemd's PCR signatures, image load events). Checked once against sbsigntool and efitools
 (2026-10-30, Debian trixie): see the commit log.
 
 ## On a machine's firmware
