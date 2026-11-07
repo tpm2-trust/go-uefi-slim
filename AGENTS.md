@@ -1,7 +1,7 @@
 # Notes for agents working on go-uefi-slim
 
 - **The standard library and `golang.org/x/sys` alone.** No other dependency:
-  aSSH and tpm2-kira link this, and safearch's initrd links aSSH. PKCS#7,
+  aSSH and kira link this, and safearch's initrd links aSSH. PKCS#7,
   signature lists, Authenticode are built with `encoding/asn1`, `crypto/x509`,
   `debug/pe`.
 - **Not go-uefi's code.** Nothing is copied from foxboron/go-uefi (MIT); this
@@ -13,7 +13,7 @@
 - **Never create by looking, never leave the immutable mark lifted.** A check
   opens read-only; a write or removal puts the mark back, also after a failure.
 - **Nothing project-specific.** No name, GUID or path of aSSH's or
-  tpm2-kira's: they pass their own.
+  kira's: they pass their own.
 - **No backwards compatibility** (the workspace's rule): one API, the current.
 - **Tests run with `-count=1`, wait for a state, never for a time.** Parsers of
   outside input (signature lists, PE files) have fuzz targets.
