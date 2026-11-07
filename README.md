@@ -6,7 +6,7 @@ signed variable updates and Authenticode. What it writes is what sbctl,
 sbsigntools and efitools write, so either can take over a machine the other
 set up.
 
-Used by aSSH (`persist`: its CA in an EFI variable) and tpm2-kira (its own
+Used by aSSH (`persist`: its CA in an EFI variable) and kira (its own
 variables, Secure Boot). Part of the tpm2-trust workspace; owned by neither
 project.
 
@@ -96,7 +96,7 @@ signed updates, PE images, systemd's PCR signatures, image load events). Checked
 enrolling PK ends Setup Mode for good). `vmcheck enrol /var/lib/sbctl
 FILE...` makes PK, KEK and db as sbctl lays them out (RSA-4096), signs the
 files, enrols db, KEK and PK with Microsoft's certificates; `vmcheck state`,
-`vmcheck verify`. Done on tpm2-kira's local VMs (OVMF with Secure Boot,
+`vmcheck verify`. Done on kira's local VMs (OVMF with Secure Boot,
 2026-10-30):
 
 - Arch (systemd-boot, a UKI, both signed here): boots with Secure Boot on;
